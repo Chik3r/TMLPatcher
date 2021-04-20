@@ -1,0 +1,39 @@
+﻿#[no_mangle]
+pub fn test(x: i32, y: i32) -> i32 {
+    println!("Hello from rust!");
+    
+    x + y
+}
+
+#[no_mangle]
+pub unsafe fn test2(data: *const u8, len: i32, width: u32, height: u32, path: *const u8, path_len: i32) -> bool {
+    // println!("Hello from rust!");
+    
+    let path = std::slice::from_raw_parts(path, path_len as usize);
+    let path = std::str::from_utf8(path).unwrap();
+
+    // println!("{}", path);
+
+    let data = std::slice::from_raw_parts(data, len as usize);
+
+    let result = image::save_buffer_with_format(path, data, width, height, image::ColorType::Rgba8, image::ImageFormat::Png);
+    match result {
+        Ok(_) => true,
+        Err(e) => {
+            println!("Failed with error: {:?}", e);
+            false
+        }
+    }
+
+    // image::save_buffer_with_format(path, buf, width, height, color, format)
+
+    // let mut d = data;
+    // let mut sum: i32 = 0;
+
+    // for _ in 0..len {
+    //     sum = sum + *d as i32;
+    //     d = d.offset(1);
+    // }
+    
+    // true
+}

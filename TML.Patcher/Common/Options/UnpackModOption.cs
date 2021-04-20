@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Consolation.Common.Framework.OptionsSystem;
 using TML.Files.Generic.Files;
@@ -21,10 +22,11 @@ namespace TML.Patcher.Common.Options
 
         public override void Execute()
         {
+            for (int i = 0; i < 10; i++) {
             string modName = GetModName(Program.Configuration.ModsPath);
             
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine( $" Extracting mod: {modName}...");
+            // Console.WriteLine( $" Extracting mod: {modName}...");
             Console.ForegroundColor = ConsoleColor.DarkGray;
             
             DirectoryInfo directory = Directory.CreateDirectory(Path.Combine(Program.Configuration.ExtractPath, modName));
@@ -40,14 +42,18 @@ namespace TML.Patcher.Common.Options
             sw.Stop();
 
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($" Finished extracting mod: {modName}");
-            Console.WriteLine($" Extraction time: {sw.Elapsed}");
+            // Console.WriteLine($" Finished extracting mod: {modName}");
+            Console.WriteLine($"{sw.Elapsed}");
 
-            Program.Instance.WriteOptionsList(new ConsoleOptions("Return:"));
+            // Program.Instance.WriteOptionsList(new ConsoleOptions("Return:"));
+            }
+
+            Console.ReadLine();
         }
 
         private static string GetModName(string pathToSearch)
         {
+            return "CalamityMod.tmod";
             while (true)
             {
                 Program.Instance.WriteAndClear("Please enter the name of the mod you want to extract:", ConsoleColor.Yellow);
@@ -135,29 +141,41 @@ namespace TML.Patcher.Common.Options
             int height = MemoryMarshal.Read<int>(dataSpan[8..12]);
             ReadOnlySpan<byte> oldPixels = dataSpan[12..];
 
-            using Bitmap imageMap = new(width, height, PixelFormat.Format32bppArgb);
+            // using Bitmap imageMap = new(width, height, PixelFormat.Format32bppArgb);
+            //
+            // BitmapData bitmapData = imageMap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, imageMap.PixelFormat);
+            //
+            // for (int y = 0; y < bitmapData.Height; y++)
+            // {
+            //     int currentLine = y * bitmapData.Stride;
+            //     byte* row = (byte*) bitmapData.Scan0 + currentLine;
+            //     for (int x = 0; x < bitmapData.Width; x++)
+            //     {
+            //         int posRaw = x * 4;
+            //         int posNormal = posRaw + currentLine;
+            //         
+            //         row[posRaw + 2] = oldPixels[posNormal + 0]; // R
+            //         row[posRaw + 1] = oldPixels[posNormal + 1]; // G
+            //         row[posRaw + 0] = oldPixels[posNormal + 2]; // B
+            //         row[posRaw + 3] = oldPixels[posNormal + 3]; // A
+            //     }
+            // }
+            //
+            // imageMap.UnlockBits(bitmapData);
+            //
+            // imageMap.Save(Path.ChangeExtension(properPath, ".png"));
 
-            BitmapData bitmapData = imageMap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, imageMap.PixelFormat);
+            var path = NullTerminatedUtf8Bytes(Path.ChangeExtension(properPath, ".png"));
+            bool completed = test2(data[12..], data.Length - 12, (uint)width, (uint)height, path, path.Length);
+        }
 
-            for (int y = 0; y < bitmapData.Height; y++)
-            {
-                int currentLine = y * bitmapData.Stride;
-                byte* row = (byte*) bitmapData.Scan0 + currentLine;
-                for (int x = 0; x < bitmapData.Width; x++)
-                {
-                    int posRaw = x * 4;
-                    int posNormal = posRaw + currentLine;
-                    
-                    row[posRaw + 2] = oldPixels[posNormal + 0]; // R
-                    row[posRaw + 1] = oldPixels[posNormal + 1]; // G
-                    row[posRaw + 0] = oldPixels[posNormal + 2]; // B
-                    row[posRaw + 3] = oldPixels[posNormal + 3]; // A
-                }
-            }
-            
-            imageMap.UnlockBits(bitmapData);
-            
-            imageMap.Save(Path.ChangeExtension(properPath, ".png"));
+        [DllImport("lib/tmlpatcher_file_storage.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern bool test2([In] [MarshalAs(UnmanagedType.LPArray)] byte[] data, 
+            int len, uint width, uint height, [In] byte[] path, int path_len);
+
+        private static byte[] NullTerminatedUtf8Bytes(string str)
+        {
+            return Encoding.UTF8.GetBytes(str);
         }
     }
 }
