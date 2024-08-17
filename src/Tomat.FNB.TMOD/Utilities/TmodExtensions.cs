@@ -138,7 +138,7 @@ public static class TmodExtensions
                 actionParallelism = Math.Max(1, Environment.ProcessorCount - 1);
             }
 
-            transformParallelism = Environment.ProcessorCount - actionParallelism;
+            transformParallelism = Math.Max(1, Environment.ProcessorCount - actionParallelism);
         }
         else if (actionParallelism < 0)
         {
@@ -147,7 +147,7 @@ public static class TmodExtensions
                 transformParallelism = Math.Max(1, Environment.ProcessorCount - 1);
             }
 
-            actionParallelism = Environment.ProcessorCount - transformParallelism;
+            actionParallelism = Math.Max(1, Environment.ProcessorCount - transformParallelism);
         }
 
         var entries = ConvertAndDecompressEntries(
