@@ -123,13 +123,12 @@ public static class TmodExtensions
         int                                             actionParallelism    = -1
     )
     {
-        const int numerator   = 6;
-        const int denominator = 8;
+        const int denominator = 3;
 
         if (transformParallelism < 0 && actionParallelism < 0)
         {
-            transformParallelism = Math.Max(1, Environment.ProcessorCount * numerator                 / denominator);
-            actionParallelism    = Math.Max(1, Environment.ProcessorCount * (denominator - numerator) / denominator);
+            transformParallelism = Math.Max(1, Environment.ProcessorCount / denominator);
+            actionParallelism    = Math.Max(1, Environment.ProcessorCount - 1);
         }
         else if (transformParallelism < 0)
         {
@@ -147,7 +146,7 @@ public static class TmodExtensions
                 transformParallelism = Math.Max(1, Environment.ProcessorCount - 1);
             }
 
-            actionParallelism = Math.Max(1, Environment.ProcessorCount - transformParallelism);
+            actionParallelism = Math.Max(1, Environment.ProcessorCount - 1);
         }
 
         var entries = ConvertAndDecompressEntries(
@@ -183,6 +182,7 @@ public static class TmodExtensions
             new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = transformParallelism,
+                EnsureOrdered = false,
             }
         );
         {
@@ -202,6 +202,7 @@ public static class TmodExtensions
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = actionParallelism,
+                    EnsureOrdered = false,
                 }
             );
             transformBlock.LinkTo(
@@ -260,6 +261,7 @@ public static class TmodExtensions
             new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism,
+                EnsureOrdered = false,
             }
         );
         {
