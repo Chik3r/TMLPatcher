@@ -17,6 +17,8 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
     public string Name { get; }
 
     public string Version { get; }
+    
+    public byte[]? Hash { get; private init; }
 
     public IReadOnlyDictionary<string, ISerializableTmodFile.FileEntry> Entries { get; }
 
@@ -163,7 +165,8 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
             }
 
             var modLoaderVersion = reader.ReadString();
-            stream.Position += HASH_LENGTH + SIGNATURE_LENGTH + sizeof(uint);
+            var hash             = reader.ReadBytes(HASH_LENGTH);
+            stream.Position += SIGNATURE_LENGTH + sizeof(uint);
 
             var isLegacy = System.Version.Parse(modLoaderVersion) < VERSION_0_11_0_0;
             if (isLegacy)
@@ -232,7 +235,9 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
                 }
             }
 
-            return new SerializableTmodFile(modLoaderVersion, name, version, entries);
+            return new SerializableTmodFile(modLoaderVersion, name, version, entries) {
+                Hash = hash,
+            };
         }
         finally
         {
