@@ -6,8 +6,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks.Dataflow;
 
-using Tomat.FNB.Deflate;
-
 using Tomat.FNB.Common.Compression;
 using Tomat.FNB.TMOD.Converters;
 
@@ -331,7 +329,7 @@ public static class TmodExtensions
         return (path, data);
     }
 
-    private static byte[] Decompress(byte[] data, int uncompressedLength)
+    public static byte[] Decompress(byte[] data, int uncompressedLength)
     {
         // In cases where the file isn't actually compressed.  This is possible
         // with custom fnb settings or if a tModLoader `.tmod` contains files
