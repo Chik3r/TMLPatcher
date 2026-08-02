@@ -221,7 +221,8 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
 
                 foreach (var (path, entry) in entries)
                 {
-                    Debug.Assert(entry.CompressedLength <= entry.Length && entry.CompressedLength != 0);
+                    // Ignore this, some tmod files can have zero-byte files, I assume if the contents of a file were completely deleted but not the file itself
+                    // Debug.Assert(entry.CompressedLength <= entry.Length && entry.CompressedLength != 0);
 
                     var data = reader.ReadBytes(entry.CompressedLength);
                     {
