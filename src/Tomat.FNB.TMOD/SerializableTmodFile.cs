@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Tomat.FNB.TMOD;
 
@@ -50,9 +51,10 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
     ///     Writes this <c>.tmod</c> file to the given stream.
     /// </summary>
     /// <param name="stream">The stream.</param>
-    public void Write(Stream stream)
+    /// <param name="leaveOpen">True if the stream should be left open.</param>
+    public void Write(Stream stream, bool leaveOpen = false)
     {
-        var writer = new BinaryWriter(stream);
+        var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen);
 
         try
         {

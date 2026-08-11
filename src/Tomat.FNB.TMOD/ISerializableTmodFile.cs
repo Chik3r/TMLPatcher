@@ -61,5 +61,8 @@ public interface ISerializableTmodFile : IReadOnlyTmodFile
     /// <param name="stream">
     ///     The stream to write the <c>.tmod</c> file to.
     /// </param>
-    void Write(Stream stream);
+    /// <param name="leaveOpen">
+    ///     True if the stream should be left open.
+    /// </param>
+    void Write(Stream stream, bool leaveOpen = false);
 }
