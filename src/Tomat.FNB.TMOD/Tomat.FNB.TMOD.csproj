@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="fpng.dll" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Include="fpng.dll" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" CopyToPublishDirectory="Never" />
     </ItemGroup>
 
     <ItemGroup>
