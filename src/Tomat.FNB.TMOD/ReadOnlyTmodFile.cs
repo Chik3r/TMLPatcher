@@ -14,7 +14,7 @@ public readonly struct ReadOnlyTmodFile(IReadOnlyTmodFile tmod) : IReadOnlyTmodF
 
     string IReadOnlyTmodFile.Version => tmod.Version;
 
-    IReadOnlyDictionary<string, byte[]> IReadOnlyTmodFile.Entries => tmod.Entries;
+    IReadOnlyList<(string path, byte[] data)> IReadOnlyTmodFile.Entries => tmod.Entries;
 
     byte[] IReadOnlyTmodFile.this[string path] => tmod[path];
 }

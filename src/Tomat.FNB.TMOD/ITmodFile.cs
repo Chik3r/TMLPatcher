@@ -11,7 +11,7 @@ public interface ITmodFile : IReadOnlyTmodFile
     ///     A hashmap (path -> file data) of all the files within this
     ///     <c>.tmod</c> file.
     /// </summary>
-    new IDictionary<string, byte[]> Entries { get; }
+    new IList<(string path, byte[] data)> Entries { get; }
 
     /// <summary>
     ///     Adds a file to the <c>.tmod</c> file.

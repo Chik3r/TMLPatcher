@@ -26,7 +26,7 @@ public interface IReadOnlyTmodFile
     ///     A hashmap (path -> file data) of all the files within this
     ///     <c>.tmod</c> file.
     /// </summary>
-    IReadOnlyDictionary<string, byte[]> Entries { get; }
+    IReadOnlyList<(string path, byte[] data)> Entries { get; }
 
     /// <summary>
     ///     Retrieves the file data for the given path.

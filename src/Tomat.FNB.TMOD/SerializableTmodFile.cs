@@ -21,30 +21,30 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
     
     public byte[]? Hash { get; private init; }
 
-    public IReadOnlyDictionary<string, ISerializableTmodFile.FileEntry> Entries { get; }
+    public IReadOnlyList<(string path, ISerializableTmodFile.FileEntry entry)> Entries { get; }
 
-    IReadOnlyDictionary<string, byte[]> IReadOnlyTmodFile.Entries => rawDataEntries;
+    IReadOnlyList<(string path, byte[] data)> IReadOnlyTmodFile.Entries => rawDataEntries;
 
-    public ISerializableTmodFile.FileEntry this[string path] => Entries[path];
+    public ISerializableTmodFile.FileEntry this[string path] => Entries.First(s => s.path == path).entry;
 
-    byte[] IReadOnlyTmodFile.this[string path] => rawDataEntries[path];
+    byte[] IReadOnlyTmodFile.this[string path] => rawDataEntries.First(s => s.path == path).data;
 
-    private readonly Dictionary<string, byte[]> rawDataEntries;
+    private readonly List<(string path, byte[] data)> rawDataEntries;
 
     internal SerializableTmodFile(
-        string                                              modLoaderVersion,
-        string                                              name,
-        string                                              version,
-        Dictionary<string, ISerializableTmodFile.FileEntry> entries
+        string                                          modLoaderVersion,
+        string                                          name,
+        string                                          version,
+        List<(string path, ISerializableTmodFile.FileEntry entry)> entries
     )
     {
-        Debug.Assert(entries.Values.All(x => x.Data is not null), "All entries must have data.");
+        Debug.Assert(entries.All(x => x.entry.Data is not null), "All entries must have data.");
 
         ModLoaderVersion = modLoaderVersion;
         Name             = name;
         Version          = version;
         Entries          = entries;
-        rawDataEntries   = entries.ToDictionary(x => x.Key, x => x.Value.Data!);
+        rawDataEntries   = entries.Select(x => (x.path, x.entry.Data!)).ToList();
     }
 
     /// <summary>
@@ -181,7 +181,7 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
             var version    = reader.ReadString();
             var entryCount = reader.ReadInt32();
 
-            var entries = new Dictionary<string, ISerializableTmodFile.FileEntry>(entryCount);
+            var entries = new List<(string path, ISerializableTmodFile.FileEntry entry)>(entryCount);
 
             if (isLegacy)
             {
@@ -191,7 +191,7 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
                     var length = reader.ReadInt32();
                     var data   = reader.ReadBytes(length);
 
-                    entries.Add(
+                    entries.Add((
                         path,
                         new ISerializableTmodFile.FileEntry
                         {
@@ -199,18 +199,17 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
                             CompressedLength = length,
                             Data             = data,
                         }
-                    );
+                    ));
                 }
             }
-            else
-            {
+            else {
                 for (var i = 0; i < entryCount; i++)
                 {
                     var path             = reader.ReadString();
                     var length           = reader.ReadInt32();
                     var compressedLength = reader.ReadInt32();
 
-                    entries.Add(
+                    entries.Add((
                         path,
                         new ISerializableTmodFile.FileEntry
                         {
@@ -218,11 +217,11 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
                             CompressedLength = compressedLength,
                             Data             = null,
                         }
-                    );
+                    ));
                 }
 
-                foreach (var (path, entry) in entries)
-                {
+                for (var index = 0; index < entries.Count; index++) {
+                    var (path, entry) = entries[index];
                     // Ignore this, some tmod files can have zero-byte files, I assume if the contents of a file were completely deleted but not the file itself
                     // Debug.Assert(entry.CompressedLength <= entry.Length && entry.CompressedLength != 0);
 
@@ -231,10 +230,9 @@ public readonly struct SerializableTmodFile : ISerializableTmodFile
                         Debug.Assert(data.Length == entry.CompressedLength);
                     }
 
-                    entries[path] = entry with
-                    {
+                    entries[index] = (path, entry with {
                         Data = data,
-                    };
+                    });
                 }
             }
 
